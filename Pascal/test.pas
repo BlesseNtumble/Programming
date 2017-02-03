@@ -1,4 +1,4 @@
 program test;
 begin
-  write('This test program on Pascal.')
+  write('This test program on Pascal.');
 end.
