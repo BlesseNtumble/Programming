@@ -1,11 +1,11 @@
 {
   [*] Мигунов Виталий Владимирович
-  [*] ИВТ-16-2
+  [*] ИВТ-17-1
   [*] Вариант: 16
   [*] Задание: 139и
 }
 program matrix2;
-const max = 20;
+const max = byte.MaxValue;
 type matrix = array [1..max] of real;
 var res  : real; 
     mass : matrix;
@@ -16,6 +16,7 @@ begin
     write('Введите количество элементов последовательности (Не больше ', max,'): ');
     readln(n);
   until (n <= max);
+  
   fact := 1;
   res := 0;
   for var i:=1 to n do

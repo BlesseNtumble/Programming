@@ -1,3 +1,9 @@
+{
+  [*] Мигунов Виталий Владимирович
+  [*] ИВТ-17-1
+  [*] Вариант: 16
+  [*] Задание: 338д
+}
 program matrix2;
 const max = 15;
 type matrix = array [1..max] of integer;

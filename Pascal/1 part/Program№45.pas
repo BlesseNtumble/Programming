@@ -1,6 +1,6 @@
 ﻿{
   [*] Мигунов Виталий Владимирович
-  [*] ИВТ-16-2
+  [*] ИВТ-17-1
   [*] Вариант: 16
   [*] Задание: 45
   [*] Даны действительные числа a, b, c, d. 
@@ -10,26 +10,22 @@
 }
 program xpeHb;
 
-var a, b, c, d, max: real;
+var a, b, c, d, max: real; //основные переменные
     
 begin
-    write('Введите A: ');
-    readln(a);
-    write('Введите В: ');
-    readln(b);
-    write('Введите C: ');
-    readln(c);
-    write('Введите D: ');
-    readln(d);
+    //----- Вводим N числа ----------------------------
+    write('Введите A: '); read(a);
+    write('Введите В: '); read(b);
+    write('Введите C: '); read(c);
+    write('Введите D: '); read(d);
+    //--------------------------------------------------
      
     if (a > b) then max := a
     else max := b;
     
     if (c > max) then max := c;
     if (d > max) then max := d;
-    
-    
-       
+         
     writeln('Max: ', max);
     
     if (a <= b) and (b <= c) and (c <= d) then

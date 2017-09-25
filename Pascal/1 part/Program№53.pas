@@ -1,6 +1,6 @@
 {
   [*] Мигунов Виталий Владимирович
-  [*] ИВТ-16-2
+  [*] ИВТ-17-1
   [*] Вариант: 16
   [*] Задание: 53
   [*] Даны действительные числа a, b, c, d, e, f, g, h. 
@@ -18,28 +18,19 @@ var a,b,c,d,e,f,g,h:real;
   f1, f2:real;
   
 begin
-  write('Введите a: ');
-  readln(a);  
-  write('Введите b: ');
-  readln(b);  
-  write('Введите c: ');
-  readln(c);  
-  write('Введите d: ');
-  readln(d);  
-  write('Введите e: ');
-  readln(e);  
-  write('Введите f: ');
-  readln(f);  
-  write('Введите g: ');
-  readln(g);  
-  write('Введите h: ');
-  readln(h);
-  
-  if (e = g) or (f = h) then
-    begin
-      writeln('Точки e,f,g,h должны различатся!');
-      exit;
-    end;
+  repeat
+    write('Введите a: ');  readln(a);  
+    write('Введите b: ');  readln(b);  
+    write('Введите c: ');  readln(c);  
+    write('Введите d: ');  readln(d);  
+    write('Введите e: ');  readln(e);  
+    write('Введите f: ');  readln(f);  
+    write('Введите g: ');  readln(g);  
+    write('Введите h: ');  readln(h);
+    
+    if (e = g) or (f = h) then writeln('Точки e,f,g,h должны различатся!');
+   
+  until not(e = g) or not(f = h);
   
   //Уравнение прямой f=0: f=(X-e)*(h-f)-(Y-f)*(g-e)
   f1:=(a-e)*(h-f)-(b-f)*(g-e);
