@@ -4,6 +4,12 @@ ehthumbs.db
 
 # Folder config file
 Desktop.ini
+Python/.metadata/
+Python/Programms/
+Python/GameRPG/.settings/
+*.pyc
+.project
+.pydevproject
 
 # Recycle Bin used on file shares
 $RECYCLE.BIN/

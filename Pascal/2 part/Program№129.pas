@@ -23,8 +23,6 @@ begin
   Line(320,100,320,120);
   FloodFill(390, 100 ,clGreen);
   
-  setpixel(390,100,clBlack);
-  
   SetPenColor(clRed);
   SetBrushColor(clRosyBrown);
   Ellipse(35, 55, WindowWidth - 300, WindowHeight - 300); 
