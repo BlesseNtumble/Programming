@@ -38,8 +38,11 @@ class EntityProjectile():
         
     def hit_check(self, obj):
         if self.direction == RIGHT:
-            if self.posX >= obj.posX - obj.size + 15 and self.posY >= obj.posY - obj.size + 25 and self.posY <= obj.posY + obj.size :                
+            if self.posX >= obj.posX - obj.size + 15 and self.posY >= obj.posY - obj.size + 20 and self.posY <= obj.posY + obj.size - 25:                
                 self.set_damage(obj)
+        if self.direction == LEFT:
+            if self.posX >= obj.posX - obj.size and self.posX <= obj.posX + obj.size - 15  and self.posY >= obj.posY - obj.size + 15 and self.posY <= obj.posY + obj.size - 30:       
+                self.set_damage(obj)         
        
     def set_damage(self, obj):
         obj.hp -= self.damage

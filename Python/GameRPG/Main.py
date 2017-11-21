@@ -2,16 +2,16 @@
 from pygame import *
 
 from Constants import *
-from entities.base.EntityLiving import *
-from entities.EntityPlayer import *
 from entities.EntityArrow import EntityArrow
 from entities.EntityMonster import EntityMonster
+from entities.EntityPlayer import *
+from entities.base.EntityLiving import *
+from skills.Arrow import Arrow
 
 
 class Main():
     def __init__(self, screen):
         self.screen = screen 
-        self.window = window
         self.isRun = True
 
         self.players = [EntityPlayer(self)]  
@@ -54,10 +54,7 @@ class Main():
                         self.player.movedir = [0, 0, 0, 1] #[D, L, R, U]
                         
                     if event.key == pygame.K_SPACE:
-                        if self.player.mp >= SPELL_COST:
-                            self.player.mp -= SPELL_COST
-                            self.projectiles.append(EntityArrow(self, self.player.posX, self.player.posY, self.player.direction))
-                            
+                        Arrow(self, self.player).useSkill()
                             
                 if event.key == pygame.K_z: 
                     if self.player.animation != DEAD:
