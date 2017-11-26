@@ -1,27 +1,21 @@
+from pygame import *
 import pygame
 
-class Block():
-    def __init__(self, game, x, y, image_pack, block_sides):
+
+class Block(pygame.sprite.Sprite):
+    def __init__(self, game, x, y, uv, image_id, block_sides):
+        pygame.sprite.Sprite.__init__(self)
+        
         self.game = game
-        self.posX = x
-        self.posY = y
+        
+        self.image_id = image_id
         self.block_sides = block_sides
-        self.image = image_pack[0]
-        self.u = image_pack[1]
-        self.v = image_pack[2]
-        self.size = image_pack[3]
-        self.images = []
+        self.image = self.game.assets[self.image_id][uv[0]][uv[1]]
         
-        temp = pygame.image.load(self.image).convert_alpha()
-        
-        for m in range(self.u):
-            i = []
-            for k in range(self.v):                                      
-                i.append(temp.subsurface(self.size * m, self.size * k, self.size, self.size))
-            self.images.append(i)
-            
-    def render(self, screen):       
-        screen.blit(self.images[self.u - 1][self.v - 1], (self.posX, self.posY))
+        self.rect = self.image.get_rect()        
+        self.rect.x = x
+        self.rect.y = y       
+        self.size = self.rect.size[0]    
         
     def tick(self):
         pass
@@ -31,5 +25,4 @@ class Block():
         
 class Brick(Block):
     def __init__(self, game, pos, uv, blocked):
-        self.image = ['resources/blocks.png', uv[0], uv[1], 40]
-        Block.__init__(self, game, pos[0], pos[1], self.image, blocked)
+        Block.__init__(self, game, pos[0], pos[1], uv, 'BLOCKS', blocked)

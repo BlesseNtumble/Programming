@@ -1,5 +1,4 @@
-WIN_WIDTH = 1250
-WIN_HEIGHT = 916
+SIZE = (WIDTH, HEIGHT) = (1250, 916)
 
 # Direction
 DOWN = 0

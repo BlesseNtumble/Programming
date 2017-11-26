@@ -1,61 +1,48 @@
 # -*- coding: utf-8 -*-
+import random
+
 import pygame
+
 from Constants import *
 
 
-class EntityProjectile():
+class EntityProjectile(pygame.sprite.Sprite):
     
-    def __init__(self, game, x, y, speed, damage, direct, image_pack):
+    def __init__(self, game, owner, x, y, speed, damage, direct):
+        super(EntityProjectile, self).__init__()
+        
         self.game = game
+        self.owner = owner
         self.posX = x
         self.posY = y
         self.damage = damage
         self.type = 0
         self.speed = speed
         self.direction = direct
-        self.image = image_pack[0]
-        self.u = image_pack[1]
-        self.v = image_pack[2]
-        self.size = image_pack[3]
-        self.images = []
         
-        temp = pygame.image.load(self.image).convert_alpha()
-        
-        for m in range(self.u):
-            i = []
-            for k in range(self.v):                                      
-                i.append(temp.subsurface(self.size * m, self.size * k, self.size, self.size))
-            self.images.append(i)
+        self.image = self.game.assets['ARROW'][self.direction]
+        self.rect = self.image.get_rect()        
+        self.rect.x = self.posX
+        self.rect.y = self.posY
             
     # Движение энтити
     def move(self): 
-        if(self.direction == RIGHT): self.posX += self.speed
-        if(self.direction == DOWN): self.posY += self.speed
-        if(self.direction == LEFT): self.posX -= self.speed
-        if(self.direction == UP): self.posY -= self.speed
-        for i in self.game.monsters:
-            self.hit_check(i)
+        if(self.direction == RIGHT): self.rect.x += self.speed
+        if(self.direction == DOWN): self.rect.y += self.speed
+        if(self.direction == LEFT): self.rect.x -= self.speed
+        if(self.direction == UP): self.rect.y -= self.speed
         
-    def hit_check(self, obj):
-        if self.direction == RIGHT:
-            if self.posX >= obj.posX - obj.size + 15 and self.posY >= obj.posY - obj.size + 20 and self.posY <= obj.posY + obj.size - 25:                
-                self.set_damage(obj)
-        if self.direction == LEFT:
-            if self.posX >= obj.posX - obj.size and self.posX <= obj.posX + obj.size - 15  and self.posY >= obj.posY - obj.size + 15 and self.posY <= obj.posY + obj.size - 30:       
-                self.set_damage(obj)         
-       
+        for i in self.game.projectiles:
+            if i.rect.x > WIDTH or i.rect.x < -self.rect.size[0] or i.rect.y > HEIGHT or i.rect.y < -self.rect.size[0]:
+                self.game.projectiles.remove(self)
+  
+        for i in self.game.entities:                     
+            if pygame.sprite.collide_rect(self, i) and self.owner != i:
+                self.set_damage(i)
+                
     def set_damage(self, obj):
         obj.hp -= self.damage
         self.remove()
-        
-    def remove_projetile(self):
-        for i in self.game.projectiles:
-            if i.posX > WIN_WIDTH or i.posX < -self.size or i.posY > WIN_HEIGHT or i.posY < -self.size:
-                self.game.projectiles.remove(i)
-         
-    
-    def render(self, screen):       
-        screen.blit(self.images[self.type][self.direction], (self.posX, self.posY))
         
     def remove(self):
         self.game.projectiles.remove(self)

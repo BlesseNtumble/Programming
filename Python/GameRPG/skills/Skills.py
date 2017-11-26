@@ -18,13 +18,9 @@ class Skills():
     def tick(self):                
         if self.cooldown > 0 and self.caster.tick_living % 10 == 0:
             self.cooldown -= 1
-            self.render()
     
-    def render(self):
-        print(self.cooldown)
-        
     def action(self):
-        print('Use Skill')
+        pass
         
 
 class Arrow(Skills):
@@ -33,7 +29,7 @@ class Arrow(Skills):
         Skills.__init__(self, 'Arrow', 10, 1, caster)
         
     def action(self):
-        self.caster.game.projectiles.append(EntityArrow(self.caster.game, self.caster.posX, self.caster.posY, self.caster.direction))
+        self.caster.game.projectiles.add(EntityArrow(self.caster.game, self.caster, self.caster.rect.x, self.caster.rect.y, self.caster.direction))
 
             
             

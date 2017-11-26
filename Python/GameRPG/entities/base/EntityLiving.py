@@ -7,13 +7,13 @@ import pygame
 from Constants import *
 
 
-class EntityLiving():
-    def __init__(self, game, name, chars, base, direct, anim, position, image_list):
+class EntityLiving(pygame.sprite.Sprite):
+    def __init__(self, game, name, chars, base, direct, anim, position, image_id):
+        super(EntityLiving, self).__init__()
+
         self.game = game
         self.animation = anim
         self.direction = direct
-        self.posX = position[0]
-        self.posY = position[1]
         self.name = name
 
         self.isInBattle = False
@@ -29,190 +29,139 @@ class EntityLiving():
         
         # Передвижение [D, L, R, U]
         self.movedir = [0, 0, 0, 0]
-        self.blocked = [0, 0, 0, 0]
-        self.size = image_list[3]
-        self.image_list = image_list[0]
-        self.u = image_list[1]
-        self.v = image_list[2]
-        self.images = []
-        
-        temp = pygame.image.load(self.image_list).convert_alpha()           
 
-        for m in range(self.u):
-            i = []
-            for k in range(self.v):                                      
-                i.append(temp.subsurface(self.size * m, self.size * k, self.size, self.size))
-            self.images.append(i)
-                
-    def tick(self):
+        self.image_id = image_id
+        self.image = self.game.assets[image_id][self.animation][self.direction]
+        self.rect = self.image.get_rect()
         
-        if self.hp <= 0:
-            self.kill()
+        self.rect.x = position[0]
+        self.rect.y = position[1]
         
-        if self.animation != DEAD:
-            if self.hp > 0 and self.hp < self.start_parameters[0]:
-                self.hp += float(self.start_parameters[4])        
-            if self.mp < 100:
-                self.mp += float(self.start_parameters[5])
-                
-            if self.speed <= 0 and self.isInBattle == False:
-                self.speed = 0
-                self.animation = 1
-                
-            if self.movedir[self.direction] == 0:
-                self.speed = 0  
-            else: self.speed = self.start_parameters[6] 
-            
-            if self.tick_living % 3 == 0:                
-                if self.animation == 4:
-                    self.animation = 5
-                    
-                elif self.animation == 5:
-                    self.animation = 1
-                    
-            if self.tick_living % 8 == 0:
-                if self.isInBattle == True:
-                    self.isInBattle = False
-                
+        self.size = self.rect.size[0]
+        
+    def tick(self):    
+        self.image = self.game.assets[self.image_id][self.animation][self.direction]
         self.tick_living += 1
         
-        
-    def kill(self):
-        self.hp = 0
-        self.mp = 0
-        self.animation = DEAD
-        
-    def ressurection(self):
-        self.hp = random.randint(int(self.start_parameters[0] / 6), int(self.start_parameters[0] / 2))
-        self.mp = random.randint(int(self.start_parameters[1] / 4), int(self.start_parameters[1] / 2))
-        self.animation = ALIVE
-        self.posX = self.start_parameters[2]
-        self.posY = self.start_parameters[3]
-        
-    def attack(self):
-        self.animation = 4        
-        for i in self.game.monsters:
-            self.hit_check(i)
-              
-    def hit_check(self, obj):
-        self.isInBattle = True
-        if self.direction == RIGHT:
-            if self.posX >= obj.posX - obj.size + 10 and self.posX <= obj.posX and  self.posY >= obj.posY - obj.size + 20 and self.posY <= obj.posY + obj.size - 25:                
-                obj.hp -= 15  
-        if self.direction == LEFT:
-            if self.posX >= obj.posX - obj.size and self.posX <= obj.posX + obj.size - 10 and self.posY >= obj.posY - obj.size - 15 and self.posY <= obj.posY + obj.size - 25:                
-                obj.hp -= 15
+        if self.hp < 0:
+            self.kill()
+
+        if self.animation != DEAD:            
+            
+            if self.movedir[self.direction] == 0 and self.tick_living % 5 == 0:
+                self.animation = 1
+            
+            
+            if self.hp < self.start_parameters[0]:
+                self.regen('hp', self.start_parameters[4], -1, 10)
                 
-         
+            if self.mp < self.start_parameters[1]:
+                self.regen('mp', self.start_parameters[4], -1, 5)
+       
+    def attack(self):    
+        for obj in self.game.entities:
+            if self != obj:
+                if self.direction == RIGHT:
+                    if self.rect.x >= obj.rect.x - obj.size and self.rect.x <= obj.rect.x and  self.rect.y >= obj.rect.y - obj.size and self.rect.y <= obj.rect.y + obj.size:                
+                        obj.hp -= 15  
+                 
+    def regen(self, typereg, count, time, speedregen):        
+        if self.tick_living % speedregen == 0:
+            if --time > 0 or time == -1:
+                if typereg == 'hp':
+                    self.hp += count
+                if typereg == 'mp':
+                    self.mp += count
+                
     # Движение энтити
     def move(self):        
 
         if self.animation == DEAD: return
-        
-        self.blocked = [0, 0, 0, 0] 
         t = math.cos(round(self.tick_living))
-        self.block_check()
         
         if(self.movedir[RIGHT]) == 1: 
             self.direction = RIGHT
-            if self.blocked[RIGHT] == 0: self.posX += self.speed            
+            self.rect.x += self.speed            
             
         if(self.movedir[LEFT]) == 1: 
             self.direction = LEFT
-            if self.blocked[LEFT] == 0: self.posX -= self.speed
+            self.rect.x -= self.speed
             
         if(self.movedir[DOWN]) == 1: 
             self.direction = DOWN
-            if self.blocked[DOWN] == 0: self.posY += self.speed
+            self.rect.y += self.speed
             
         if(self.movedir[UP]) == 1:
             self.direction = UP 
-            if self.blocked[UP] == 0: self.posY -= self.speed
+            self.rect.y -= self.speed
         
-        if self.isInBattle == False:
-            if(self.movedir[UP] != 0 or self.movedir[DOWN] != 0 or self.movedir[LEFT] != 0 or self.movedir[RIGHT] != 0):
-                if t >= 0:
-                    self.animation = 0
-                elif t <= -0: 
-                    self.animation = 2
+        for i in self.game.entities:
+            if (pygame.sprite.collide_rect(self, i) and self != i and i.animation != DEAD) or (i.rect.x > WIDTH or i.rect.x < -self.rect.size[0] or i.rect.y > HEIGHT or i.rect.y < -self.rect.size[0]):
+                if(self.movedir[RIGHT]) == 1:
+                    self.rect.right = i.rect.left
+                if(self.movedir[DOWN]) == 1:
+                    self.rect.bottom = i.rect.top
+                if(self.movedir[LEFT]) == 1:
+                    self.rect.left = i.rect.right
+                if(self.movedir[UP]) == 1:
+                    self.rect.top = i.rect.bottom
             
-    def block_check(self):         
-        
+
+        #if self.rect.x > WIDTH:
+            
         for i in self.game.blocks:
-            if i.block_sides[self.direction] != 0: self.contact_check(i)            
+            if pygame.sprite.collide_rect(self, i) and self != i:
+                if(self.movedir[RIGHT]) == 1 and i.block_sides[RIGHT] == 1:
+                    self.rect.right = i.rect.left
+                if(self.movedir[DOWN]) == 1 and i.block_sides[DOWN] == 1:
+                    self.rect.bottom = i.rect.top
+                if(self.movedir[LEFT]) == 1 and i.block_sides[LEFT] == 1:
+                    self.rect.left = i.rect.right
+                if(self.movedir[UP]) == 1 and i.block_sides[UP] == 1:
+                    self.rect.top = i.rect.bottom
             
-        for i in self.game.monsters:
-            if i != self: self.contact_check(i)
-            
-        self.contact_check(self.game.player)
-            
-        if (self.animation == DEAD): self.blocked = [1, 1, 1, 1]
-        # Блокировка выхода за экран
-        # [0, 0]
-        if self.posX <= 0: self.blocked[LEFT] = 1
-        if self.posY <= 0: self.blocked[UP] = 1
-        # [N, M]
-        if self.posX >= WIN_WIDTH - self.size: self.blocked[RIGHT] = 1
-        if self.posY >= WIN_HEIGHT - self.size: self.blocked[DOWN] = 1
+        if(self.movedir[self.direction] != 0):
+            if t >= 0:
+                self.animation = 0
+            elif t <= -0: 
+                self.animation = 2
+     
         
-
-    def contact_check(self, obj):
-       
-        #TODO ДОРАБОТАТЬ СРОЧНА!!!!!!!!!!!
-        #КРИВОЙ ГОВНОСКРИПТ!!!
-        par1 = 10
-        
-        #RIGHT
-        if self.posX >= obj.posX - obj.size + par1 and self.posX <= obj.posX + obj.size - par1 and self.posY >= obj.posY - obj.size + par1 - 5 and self.posY <= obj.posY + obj.size - par1:
-            self.blocked = [0, 0, 1, 0]        
-        #LEFT        
-        if self.posX <= obj.posX + obj.size - par1 and self.posX >= obj.posX + obj.size - par1 and self.posY >= obj.posY - obj.size + par1 - 5 and self.posY <= obj.posY + obj.size - par1: 
-            self.blocked = [0, 1, 0, 0]
-        """
-        #DOWN
-        if self.posY <= obj.posY + obj.size and self.posY >= obj.posY - obj.size + 15 and self.posX >= obj.posX - obj.size + par1 and self.posX <= obj.posX + obj.size - par1:  
-            self.blocked = [1, 0, 0, 0] 
-        
-        #UP 
-        if self.posY <= obj.posY + obj.size - 25 and self.posY >= obj.posY - obj.size - 5 and self.posX >= obj.posX - obj.size and self.posX <= obj.posX + obj.size:
-            self.blocked = [0, 0, 0, 1]
-        """
-        
-    # Отрисовка энтити
-    def render(self, screen):
-        screen.blit(self.images[self.animation][self.direction], (self.posX, self.posY))        
-    
-    # Отрисовка графического интерфейса
-    def render_gui(self, screen, hp, mp):
-        
+    def kill(self):
+        self.hp = 0
+        self.speed = 0  
+        self.animation = DEAD    
+         
+    def ressurection(self):
+        self.hp = random.randint(int(self.start_parameters[0] / 6), int(self.start_parameters[0] / 2))
+        self.mp = random.randint(int(self.start_parameters[1] / 4), int(self.start_parameters[1] / 2))
+        self.animation = ALIVE
+        self.rect.x = self.start_parameters[2]
+        self.rect.y = self.start_parameters[3] 
+        self.speed = self.start_parameters[6] 
+               
+    def render_ui(self, screen, drawmp):
         if self.animation == DEAD: return
-        
+         
         color_font    = (255, 255, 255)      
-        color_bg      = (30, 30, 30)
-             
+        color_bg      = (30, 30, 30)             
         fontObj = pygame.font.Font('freesansbold.ttf', 13)
-        textSurfaceObj = fontObj.render(" " + str(self.name) + " ", False, color_font, color_bg)
+        textSurfaceObj = fontObj.render(" " + str(self.name) + " ", False, color_font)
         textRectObj = textSurfaceObj.get_rect()
-        textRectObj.center = (self.posX + 23, self.posY - 25)
-
+        textRectObj.center = (self.rect.x + 23, self.rect.y - 25)
         screen.blit(textSurfaceObj, textRectObj)
         
-        if hp == True: 
-            screen.blit(pygame.image.load('resources/bar.png'), (self.posX - 3, self.posY - 15))
+        textSurfaceObj = fontObj.render('FPS: ' + str(int(self.game.timer.get_fps())), False, color_font, color_bg)
+        textRectObj = textSurfaceObj.get_rect()
+        textRectObj.center = (43, 25)
+        screen.blit(textSurfaceObj, textRectObj)
         
-            m = 1
-            z = self.hp // 4        
-            while m <= z:
-                screen.blit(pygame.image.load('resources/hp.png'), (self.posX - 4 +m*2, self.posY - 14))
-                m += 1
+        screen.blit(self.game.assets['HP_MP_FRAME'], (self.rect.x - 2, self.rect.y - 10 - 6))
+        hp = int((self.hp/self.start_parameters[0]) * 50)
+        pygame.draw.rect(screen, (220,0,0), (self.rect.x - 1, self.rect.y - 9 - 6, hp, 3))
         
-        if mp == True: 
-            screen.blit(pygame.image.load('resources/bar.png'), (self.posX - 3, self.posY - 9))
-          
-            v = 1  
-            n = self.mp // 4
-            while v <= n:
-                screen.blit(pygame.image.load('resources/mp.png'), (self.posX - 4 +v*2, self.posY - 8))
-                v += 1
-      
-    
+        if drawmp == True:
+            screen.blit(self.game.assets['HP_MP_FRAME'], (self.rect.x - 2, self.rect.y - 10))        
+            mp = int((self.mp/self.start_parameters[1]) * 50)
+            pygame.draw.rect(screen, (0,220,220), (self.rect.x - 1, self.rect.y - 9, mp, 3))
+        
