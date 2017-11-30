@@ -31,13 +31,8 @@ class EntityMonster(EntityLiving):
                 
 
             print("Entity: %s | PosX: %s | PosY: %s | RespTime: %s" % (self.name, self.rect.x, self.rect.y, self.restime))
-        
-       
-        
-    def render_ui(self, screen): 
-        EntityLiving.render_ui(self, screen, False)
-    """
-         # Test AI
+        """
+        # Test AI
         if self.animation != DEAD and self.tick_living % 40 == 0:
             j = random.randint(0, 10)
             
@@ -45,10 +40,14 @@ class EntityMonster(EntityLiving):
             if j == 1: self.movedir = [0, 1, 0, 0]
             if j == 2: self.movedir = [0, 0, 1, 0]
             if j == 3: self.movedir = [0, 0, 0, 1]
-            if j >= 4: 
+            if j >= 4:  
                 self.movedir = [0, 0, 0, 0]
                 self.animation = 1
-    """     
+        """
+        
+    def render_ui(self, screen): 
+        EntityLiving.render_ui(self, screen, False)
+
     def ressurection(self):
         self.hp = self.based[0]
         self.mp = self.based[1]

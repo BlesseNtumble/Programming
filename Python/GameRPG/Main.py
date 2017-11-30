@@ -6,31 +6,43 @@ from Resources import *
 from blocks.Block import Brick
 from entities.EntityMonster import *
 from entities.EntityPlayer import *
+from levels import Default
+from levels.Levels import Level
 
 
 class Main():
-    def __init__(self, screen):
+    def __init__(self):
+        self.__window__()
+        
         self.assets = Resources(ENTITIES, PROJECTILES, GUI).pack
-        self.screen = screen 
-        self.isRun = True
+        
         self.isPressed = False
        
         self.entities = pygame.sprite.Group()
         self.projectiles = pygame.sprite.Group()
-        self.blocks = pygame.sprite.Group()   
-        
+        self.blocks = pygame.sprite.Group() 
         self.player = EntityPlayer(self)
-        self.entities.add(self.player)   
-
-        self.add_monster(400, 350)
         
-        for i in range(int(WIDTH / 40)):
-            self.blocks.add(Brick(self, (40*i, 40), (0,1), (0,0,0,0)))            
-            self.blocks.add(Brick(self, (40*i, 0), (0,0), (1,1,1,1)))
-
+        self.current_level = 'DEFAULT'        
+        self.levels = {}
+        ############## LEVELS ###############
+        self.levels['DEFAULT'] = Level(self)
+        self.levels['non'] = Default(self)   
+        #####################################
+        self.gen_world(self.current_level)      
+           
         self.timer = pygame.time.Clock()        
-        
+
         self.draw_screen()
+    
+    def __window__(self):
+        pygame.init()
+        pygame.display.set_caption('Test')
+        self.window = pygame.display.set_mode(SIZE)
+        self.screen = pygame.Surface((WIDTH, HEIGHT - 100))
+        
+        self.isRun = True
+
     
     # Обработка событий
     def event_handler(self):
@@ -56,11 +68,14 @@ class Main():
                         self.player.movedir = [0, 0, 0, 1] #[D, L, R, U]
                         
                     if event.key == pygame.K_SPACE:
-                        self.player.attack()
+                        #self.player.attack()
+                        if self.current_level != 'non':
+                            self.gen_world('non')
+                        else: self.gen_world('DEFAULT')
                         
                     if event.key == pygame.K_z:
                         self.player.useSkill()
-                        
+                       
                 if event.key == pygame.K_q:
                     if self.player.animation != DEAD:
                         self.player.kill()
@@ -82,15 +97,16 @@ class Main():
           
 
     # Тело рендера
-    def render(self):
-        self.screen.fill((0, 65, 0))
+    def render(self):   
+        self.window.blit(self.screen, (0,0))
+        self.levels[self.current_level].update()
         
-        self.projectiles.update()
-        self.projectiles.draw(self.screen)
-        self.entities.update()
-        self.entities.draw(self.screen)
-        self.blocks.update()
+        self.blocks.update()    
         self.blocks.draw(self.screen)  
+        self.projectiles.update()
+        self.projectiles.draw(self.screen)        
+        self.entities.update()
+        self.entities.draw(self.screen)               
               
         [i.render_ui(self.screen) for i in self.entities]
 
@@ -99,8 +115,16 @@ class Main():
     def move(self):
        
         for i in self.projectiles: i.move()  
-        for i in self.entities: i.move()     
+        for i in self.entities: i.move()
             
+    def gen_world(self, level):
+        self.current_level = level 
+        
+        for i in self.entities: self.entities.remove(i)
+        for i in self.blocks: self.blocks.remove(i)
+        
+        self.levels[self.current_level].gen()
+        
     # Отрисовка экрана
     def draw_screen(self):
         pygame.time.set_timer(pygame.USEREVENT+1, 100)        
@@ -113,9 +137,5 @@ class Main():
             
     def add_monster(self, x, y):
         self.entities.add(EntityMonster(self, [x, y]))
-        
-pygame.init()
-pygame.display.set_caption('Test')
-screen = pygame.display.set_mode(SIZE)  
-game = Main(screen)
-pygame.quit()
+
+Main()

@@ -5,7 +5,7 @@ ENTITIES = [
         #ENTITIES
         ('PLAYER', ('resources/actor.png', 6, 4, 48)),
         #BLOCKS
-        ('BLOCKS', ('resources/blocks.png', 1, 2, 40))
+        ('BLOCKS', ('resources/blocks.png', 2, 2, 40))
         ]
 PROJECTILES = [
         ('ARROW', ('resources/arrow.png', 4, 48))

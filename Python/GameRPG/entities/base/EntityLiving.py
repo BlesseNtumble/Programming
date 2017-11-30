@@ -106,9 +106,7 @@ class EntityLiving(pygame.sprite.Sprite):
                 if(self.movedir[UP]) == 1:
                     self.rect.top = i.rect.bottom
             
-
-        #if self.rect.x > WIDTH:
-            
+        
         for i in self.game.blocks:
             if pygame.sprite.collide_rect(self, i) and self != i:
                 if(self.movedir[RIGHT]) == 1 and i.block_sides[RIGHT] == 1:
