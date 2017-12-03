@@ -15,7 +15,11 @@ class Levels():
         self.spawn_npc()          
                 
     def gen_block(self):
-        pass
+        self.game.screen.fill((0,0,0))
+       
+        for i in range(int(self.width / 40)+1):
+            for k in range(int(self.height / 40)+1):
+                self.game.blocks.add(Brick(self.game, (40*i, 40*k), (1,1), (0,0,0,0)))
             
     def spawn_npc(self):
         pass      

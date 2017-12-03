@@ -36,10 +36,9 @@ class Main():
 
         self.timer = pygame.time.Clock()
         
-        total_level_width  = self.levels[self.current_level].width   
-        total_level_height = self.levels[self.current_level].height
-        self.camera = Camera(self.camera_configure, total_level_width, total_level_height)
-        
+        self.total_level_width  = self.levels[self.current_level].width   
+        self.total_level_height = self.levels[self.current_level].height
+       
         self.draw_screen()
     
     def __window__(self):
@@ -114,6 +113,7 @@ class Main():
         self.entities.update()
         #self.entities.draw(self.screen)   
         
+        self.camera = Camera(self.camera_configure, self.total_level_width, self.total_level_height)       
         self.camera.update(self.player)
         [self.screen.blit(e.image, self.camera.apply(e)) for e in self.blocks]
         [self.screen.blit(e.image, self.camera.apply(e)) for e in self.entities]
@@ -134,6 +134,9 @@ class Main():
         
         for i in self.entities: self.entities.remove(i)
         for i in self.blocks: self.blocks.remove(i)
+        
+        self.total_level_width  = self.levels[self.current_level].width   
+        self.total_level_height = self.levels[self.current_level].height
         
         self.levels[self.current_level].gen()
         
