@@ -63,16 +63,16 @@ class Main():
             elif event.type == pygame.KEYDOWN:
                 if self.player.animation != DEAD:
                     
-                    if event.key == pygame.K_DOWN:                    
+                    if event.key == pygame.K_DOWN or event.key == pygame.K_s:                    
                         self.player.movedir = [1, 0, 0, 0] #[D, L, R, U]
 
-                    if event.key == pygame.K_LEFT:                    
+                    if event.key == pygame.K_LEFT or event.key == pygame.K_a:                    
                         self.player.movedir = [0, 1, 0, 0] #[D, L, R, U]
                         
-                    if event.key == pygame.K_RIGHT:                    
+                    if event.key == pygame.K_RIGHT or event.key == pygame.K_d:                    
                         self.player.movedir = [0, 0, 1, 0] #[D, L, R, U]
                         
-                    if event.key == pygame.K_UP:                    
+                    if event.key == pygame.K_UP or event.key == pygame.K_w:                    
                         self.player.movedir = [0, 0, 0, 1] #[D, L, R, U]
                         
                     if event.key == pygame.K_SPACE:
@@ -90,20 +90,18 @@ class Main():
                     else: self.player.ressurection()
                         
             elif event.type == pygame.KEYUP:
-                if event.key == pygame.K_DOWN: 
+                if event.key == pygame.K_DOWN or event.key == pygame.K_s: 
                     self.player.movedir[DOWN] = 0                       
                         
-                if event.key == pygame.K_LEFT: 
+                if event.key == pygame.K_LEFT or event.key == pygame.K_a: 
                     self.player.movedir[LEFT] = 0                        
                     
-                if event.key == pygame.K_RIGHT: 
+                if event.key == pygame.K_RIGHT or event.key == pygame.K_d: 
                     self.player.movedir[RIGHT] = 0                        
                         
-                if event.key == pygame.K_UP: 
-                    self.player.movedir[UP] = 0                      
-
-          
-
+                if event.key == pygame.K_UP or event.key == pygame.K_w: 
+                    self.player.movedir[UP] = 0  
+                    
     # Тело рендера
     def render(self):   
         self.levels[self.current_level].update()

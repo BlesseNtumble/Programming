@@ -1,5 +1,14 @@
+import random
+
+
 SIZE = (WIDTH, HEIGHT) = (1250, 916)
 
+LEVELS = 20
+EXP = []
+for i in range(LEVELS):
+    EXP.append(100 + 500*i + random.randint(0, 100))
+    
+print(EXP)
 # Direction
 DOWN = 0
 LEFT = 1

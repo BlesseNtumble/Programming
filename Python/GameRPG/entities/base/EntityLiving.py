@@ -15,7 +15,10 @@ class EntityLiving(pygame.sprite.Sprite):
         self.animation = anim
         self.direction = direct
         self.name = name
-
+        
+        self.level = 1
+        self.experience = 0
+        
         self.isInBattle = False
         
         self.start_parameters = (base[0], base[1], base[2], base[3], base[4], base[5], base[6]) #HP,MP,X,Y, REGHP, REG,MP, SPEED
@@ -45,7 +48,7 @@ class EntityLiving(pygame.sprite.Sprite):
 
         if self.hp < 0:
             self.kill()
-        
+            
         if self.animation != DEAD:            
             
             if self.movedir[self.direction] == 0 and self.tick_living % 5 == 0:
@@ -58,9 +61,9 @@ class EntityLiving(pygame.sprite.Sprite):
             if self.mp < self.start_parameters[1]:
                 self.regen('mp', self.start_parameters[4], -1, 5)
         
-    def set_damage(self, count):
+    def set_damage(self, attacker, count):
         if self.hp < count:
-            self.kill()
+            self.kill(attacker)
         else: self.hp -= count
     
     def attack(self):    
@@ -68,7 +71,7 @@ class EntityLiving(pygame.sprite.Sprite):
             if self != obj:
                 if self.direction == RIGHT:
                     if self.rect.x >= obj.rect.x - obj.size and self.rect.x <= obj.rect.x and  self.rect.y >= obj.rect.y - obj.size and self.rect.y <= obj.rect.y + obj.size:                
-                        obj.set_damage(15) 
+                        obj.set_damage(self, 15) 
                  
     def regen(self, typereg, count, time, speedregen):        
         if self.tick_living % speedregen == 0:
@@ -131,10 +134,14 @@ class EntityLiving(pygame.sprite.Sprite):
             elif t <= -0: 
                 self.animation = 2
         
-    def kill(self):
+    def kill(self, attacker):
         self.hp = 0
         self.speed = 0  
-        self.animation = DEAD    
+        self.animation = DEAD   
+        
+        attacker.experience += 50
+                     
+        print(attacker.experience)
          
     def ressurection(self):
         self.hp = random.randint(int(self.start_parameters[0] / 6), int(self.start_parameters[0] / 2))
@@ -149,16 +156,11 @@ class EntityLiving(pygame.sprite.Sprite):
         if self.animation == DEAD: return
          
         color_font    = (255, 255, 255)      
-        color_bg      = (30, 30, 30)             
+                    
         fontObj = pygame.font.Font('freesansbold.ttf', 13)
-        textSurfaceObj = fontObj.render(" " + str(self.name) + " ", False, color_font)
+        textSurfaceObj = fontObj.render("[" + str(self.level) + "] " + str(self.name) + " ", False, color_font)
         textRectObj = textSurfaceObj.get_rect()
         textRectObj.center = (camera.apply(self).x + 23, camera.apply(self).y - 25)
-        screen.blit(textSurfaceObj, textRectObj)
-        
-        textSurfaceObj = fontObj.render('FPS: ' + str(int(self.game.timer.get_fps())), False, color_font, color_bg)
-        textRectObj = textSurfaceObj.get_rect()
-        textRectObj.center = (43, 25)
         screen.blit(textSurfaceObj, textRectObj)
         
         screen.blit(self.game.assets['HP_MP_FRAME'], (camera.apply(self).x - 2, camera.apply(self).y - 10 - 6))

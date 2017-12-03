@@ -40,15 +40,18 @@ class EntityProjectile(pygame.sprite.Sprite):
                 self.remove()
             if self.distance > 0:
                 if i.rect.x > l_x + self.distance or i.rect.x < l_x - 250 or i.rect.y > l_y + self.distance or i.rect.y < l_y - self.distance:
-                    self.remove()
-            
+                    self.remove()            
             
         for i in self.game.entities:                     
-            if pygame.sprite.collide_rect(self, i) and self.owner != i:
+            if pygame.sprite.collide_rect(self, i) and self.owner != i and i.animation != DEAD:
                 self.set_damage(i)
                 
+        for i in self.game.blocks:
+            if pygame.sprite.collide_rect(self, i) and i.block_sides[self.direction] == 1:
+                self.remove()
+                
     def set_damage(self, obj):
-        obj.set_damage(self.damage)
+        obj.set_damage(self.owner, self.damage)
         self.remove()
         
     def remove(self):

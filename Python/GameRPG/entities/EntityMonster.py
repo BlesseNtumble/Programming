@@ -13,11 +13,11 @@ class EntityMonster(EntityLiving):
     def __init__(self, game, position):
         self.game = game
         self.name = 'Enemy'
-        self.chars = [100.0, 100.0, 1.0, 100] # HP, MP, SPEED, RESPAWN_TIME
-        self.based = [self.chars[0], self.chars[1], position[0], position[1], 1.1, 0, self.chars[2]]
+        self.chars = [100.0, 100.0, 1.0, 10] # HP, MP, SPEED, RESPAWN_TIME
+        self.start_parameters = [self.chars[0], self.chars[1], position[0], position[1], 1.1, 0, self.chars[2]]
         
         self.restime = 0
-        EntityLiving.__init__(self, self.game, self.name, self.chars, self.based, DOWN, ALIVE, position, 'PLAYER')
+        EntityLiving.__init__(self, self.game, self.name, self.chars, self.start_parameters, DOWN, ALIVE, position, 'PLAYER')
 
 
     def tick(self):        
@@ -49,11 +49,11 @@ class EntityMonster(EntityLiving):
         EntityLiving.render_ui(self, screen, camera, False)
 
     def ressurection(self):
-        self.hp = self.based[0]
-        self.mp = self.based[1]
+        self.hp = self.start_parameters[0]
+        self.mp = self.start_parameters[1]
         self.animation = ALIVE
         self.rect.x = self.start_parameters[2]
-        self.rect.y = self.start_parameters[3]
-        self.restime = 0
-        
+        self.rect.y = self.start_parameters[3] 
+        self.speed = self.start_parameters[6]
+        self.restime = 0        
     
