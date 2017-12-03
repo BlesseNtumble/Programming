@@ -42,10 +42,10 @@ class EntityLiving(pygame.sprite.Sprite):
     def tick(self):    
         self.image = self.game.assets[self.image_id][self.animation][self.direction]
         self.tick_living += 1
-        
+
         if self.hp < 0:
             self.kill()
-
+        
         if self.animation != DEAD:            
             
             if self.movedir[self.direction] == 0 and self.tick_living % 5 == 0:
@@ -57,13 +57,18 @@ class EntityLiving(pygame.sprite.Sprite):
                 
             if self.mp < self.start_parameters[1]:
                 self.regen('mp', self.start_parameters[4], -1, 5)
-       
+        
+    def set_damage(self, count):
+        if self.hp < count:
+            self.kill()
+        else: self.hp -= count
+    
     def attack(self):    
         for obj in self.game.entities:
             if self != obj:
                 if self.direction == RIGHT:
                     if self.rect.x >= obj.rect.x - obj.size and self.rect.x <= obj.rect.x and  self.rect.y >= obj.rect.y - obj.size and self.rect.y <= obj.rect.y + obj.size:                
-                        obj.hp -= 15  
+                        obj.set_damage(15) 
                  
     def regen(self, typereg, count, time, speedregen):        
         if self.tick_living % speedregen == 0:
@@ -77,11 +82,12 @@ class EntityLiving(pygame.sprite.Sprite):
     def move(self):        
 
         if self.animation == DEAD: return
+        
         t = math.cos(round(self.tick_living))
         
         if(self.movedir[RIGHT]) == 1: 
             self.direction = RIGHT
-            self.rect.x += self.speed            
+            self.rect.x += self.speed 
             
         if(self.movedir[LEFT]) == 1: 
             self.direction = LEFT
@@ -96,15 +102,16 @@ class EntityLiving(pygame.sprite.Sprite):
             self.rect.y -= self.speed
         
         for i in self.game.entities:
-            if (pygame.sprite.collide_rect(self, i) and self != i and i.animation != DEAD) or (i.rect.x > WIDTH or i.rect.x < -self.rect.size[0] or i.rect.y > HEIGHT or i.rect.y < -self.rect.size[0]):
-                if(self.movedir[RIGHT]) == 1:
-                    self.rect.right = i.rect.left
-                if(self.movedir[DOWN]) == 1:
-                    self.rect.bottom = i.rect.top
-                if(self.movedir[LEFT]) == 1:
-                    self.rect.left = i.rect.right
-                if(self.movedir[UP]) == 1:
-                    self.rect.top = i.rect.bottom
+            if i.animation != DEAD:
+                if (pygame.sprite.collide_rect(self, i) and self != i) or (i.rect.x > self.game.levels[self.game.current_level].width or i.rect.x < 0 or i.rect.y > self.game.levels[self.game.current_level].height - i.rect.size[0] or i.rect.y < 0):
+                    if(self.movedir[RIGHT]) == 1:
+                        self.rect.right = i.rect.left
+                    if(self.movedir[DOWN]) == 1:
+                        self.rect.bottom = i.rect.top
+                    if(self.movedir[LEFT]) == 1:
+                        self.rect.left = i.rect.right
+                    if(self.movedir[UP]) == 1:
+                        self.rect.top = i.rect.bottom
             
         
         for i in self.game.blocks:
@@ -117,13 +124,12 @@ class EntityLiving(pygame.sprite.Sprite):
                     self.rect.left = i.rect.right
                 if(self.movedir[UP]) == 1 and i.block_sides[UP] == 1:
                     self.rect.top = i.rect.bottom
-            
+    
         if(self.movedir[self.direction] != 0):
             if t >= 0:
                 self.animation = 0
             elif t <= -0: 
                 self.animation = 2
-     
         
     def kill(self):
         self.hp = 0
@@ -138,7 +144,8 @@ class EntityLiving(pygame.sprite.Sprite):
         self.rect.y = self.start_parameters[3] 
         self.speed = self.start_parameters[6] 
                
-    def render_ui(self, screen, drawmp):
+            
+    def render_ui(self, screen, camera, drawmp):
         if self.animation == DEAD: return
          
         color_font    = (255, 255, 255)      
@@ -146,7 +153,7 @@ class EntityLiving(pygame.sprite.Sprite):
         fontObj = pygame.font.Font('freesansbold.ttf', 13)
         textSurfaceObj = fontObj.render(" " + str(self.name) + " ", False, color_font)
         textRectObj = textSurfaceObj.get_rect()
-        textRectObj.center = (self.rect.x + 23, self.rect.y - 25)
+        textRectObj.center = (camera.apply(self).x + 23, camera.apply(self).y - 25)
         screen.blit(textSurfaceObj, textRectObj)
         
         textSurfaceObj = fontObj.render('FPS: ' + str(int(self.game.timer.get_fps())), False, color_font, color_bg)
@@ -154,12 +161,12 @@ class EntityLiving(pygame.sprite.Sprite):
         textRectObj.center = (43, 25)
         screen.blit(textSurfaceObj, textRectObj)
         
-        screen.blit(self.game.assets['HP_MP_FRAME'], (self.rect.x - 2, self.rect.y - 10 - 6))
+        screen.blit(self.game.assets['HP_MP_FRAME'], (camera.apply(self).x - 2, camera.apply(self).y - 10 - 6))
         hp = int((self.hp/self.start_parameters[0]) * 50)
-        pygame.draw.rect(screen, (220,0,0), (self.rect.x - 1, self.rect.y - 9 - 6, hp, 3))
+        pygame.draw.rect(screen, (220,0,0), (camera.apply(self).x - 1, camera.apply(self).y - 9 - 6, hp, 3))
         
         if drawmp == True:
-            screen.blit(self.game.assets['HP_MP_FRAME'], (self.rect.x - 2, self.rect.y - 10))        
+            screen.blit(self.game.assets['HP_MP_FRAME'], (camera.apply(self).x - 2, camera.apply(self).y - 10))        
             mp = int((self.mp/self.start_parameters[1]) * 50)
-            pygame.draw.rect(screen, (0,220,220), (self.rect.x - 1, self.rect.y - 9, mp, 3))
+            pygame.draw.rect(screen, (0,220,220), (camera.apply(self).x - 1, camera.apply(self).y - 9, mp, 3))
         

@@ -17,13 +17,12 @@ class EntityPlayer(EntityLiving):
     
         self.skill_list.append(Arrow(self))
     
-    def useSkill(self):        
-        self.skill_list[0].useSkill()
+    def useSkill(self, skillid):        
+        self.skill_list[skillid].useSkill()
         
     def tick(self):
         EntityLiving.tick(self)
-        for i in self.skill_list:
-            i.tick()
+        [i.tick() for i in self.skill_list]
 
-    def render_ui(self, screen): 
-        EntityLiving.render_ui(self, screen, True)
+    def render_ui(self, screen, camera): 
+        EntityLiving.render_ui(self, screen, camera, True)
