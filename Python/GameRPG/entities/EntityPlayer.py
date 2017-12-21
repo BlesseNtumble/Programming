@@ -15,10 +15,7 @@ class EntityPlayer(EntityLiving):
         self.base = [self.chars[0], self.chars[1], position[0], position[1], HP_REG, MP_REG, SPEED]       
         EntityLiving.__init__(self, self.game, self.name, self.chars, self.base, DOWN, ALIVE, position, 'PLAYER')    
     
-        self.skill_list.append(Arrow(self))
-    
-    def useSkill(self, skillid):        
-        self.skill_list[skillid].useSkill()
+        self.skill_list.append(Arrow(self))   
         
     def tick(self):
         EntityLiving.tick(self)
@@ -28,16 +25,19 @@ class EntityPlayer(EntityLiving):
             self.level += 1
             self.experience = 0
 
-    def render_ui(self, screen, camera): 
+    def render_ui(self, screen, camera, window): 
         #EntityLiving.render_ui(self, screen, camera, True)
         color_bg      = (30, 30, 30) 
         color_font    = (255, 255, 255)
         fontObj = pygame.font.Font('freesansbold.ttf', 13)
         
+        screen = window
         textSurfaceObj = fontObj.render('FPS: ' + str(int(self.game.timer.get_fps())), False, color_font, color_bg)
         textRectObj = textSurfaceObj.get_rect()        
         textRectObj.center = (WIDTH - 43, 25)
         screen.blit(textSurfaceObj, textRectObj)
+        
+        pygame.draw.rect(screen, (125,125,0), (0, HEIGHT - 120, WIDTH, 120))
         
         pygame.draw.rect(screen, (20,20,20), (WIDTH / 2 - 500, HEIGHT - 20, 1000, 17))        
         exp = int((1000 * self.experience) / EXP[self.level - 1])
@@ -47,9 +47,7 @@ class EntityPlayer(EntityLiving):
         textSurfaceObj = fontObj.render(str(self.experience) + "/" + str(EXP[self.level - 1]) + " XP", False, color_font)
         textRectObj = textSurfaceObj.get_rect()
         textRectObj.center = (WIDTH / 2, HEIGHT - 11)
-        screen.blit(textSurfaceObj, textRectObj)
-        
-        pygame.draw.rect(screen, (0,0,0), (2, 15, 180, 60))
+        screen.blit(textSurfaceObj, textRectObj)       
         
         textSurfaceObj = fontObj.render(str(self.level), False, color_font, color_bg)
         textRectObj = textSurfaceObj.get_rect()
@@ -61,13 +59,18 @@ class EntityPlayer(EntityLiving):
         textRectObj.center = (55, 24)
         screen.blit(textSurfaceObj, textRectObj)
         
+        #HP BAR
         pygame.draw.rect(screen, (120,0,0), (27, 35, 150, 13))
         hp = int((self.hp/self.start_parameters[0]) * 150)
         pygame.draw.rect(screen, (220,0,0), (27, 35, hp, 13))
+        #/////////
         
-        pygame.draw.rect(screen, (0,120,120), (27, 50, 150, 13))
+        #MP BAR
+        pygame.draw.rect(screen, (0,0,0), (WIDTH / 2 - 500 - 1, HEIGHT - 50 - 1, 152, 20))
+        pygame.draw.rect(screen, (0,120,120), (WIDTH / 2 - 500, HEIGHT - 50, 150, 18))        
         mp = int((self.mp/self.start_parameters[1]) * 150)
-        pygame.draw.rect(screen, (0,220,220), (27, 50, mp, 13))
+        pygame.draw.rect(screen, (0,220,220), (WIDTH / 2 - 500, HEIGHT - 50, mp, 18))
+        #/////////
         
         textSurfaceObj = fontObj.render("HP", False, color_font)
         textRectObj = textSurfaceObj.get_rect()

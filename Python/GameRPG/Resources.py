@@ -11,7 +11,7 @@ PROJECTILES = [
         ('ARROW', ('resources/arrow.png', 4, 48))
         ]
 GUI = [
-        ('HP_MP_FRAME', 'resources/bar.png')
+        
     ] 
 
 class Resources():

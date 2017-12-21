@@ -18,11 +18,25 @@ class Block(pygame.sprite.Sprite):
         self.size = self.rect.size[0]    
         
     def tick(self):
-        pass
+        self.action()        
     
     def move(self):
         pass
         
+    def action(self):
+        pass
+    
 class Brick(Block):
     def __init__(self, game, pos, uv, blocked):
         Block.__init__(self, game, pos[0], pos[1], uv, 'BLOCKS', blocked)
+        
+class ChangeLevelBlock(Block):
+    def __init__(self, game, pos, uv, blocked, level):
+        self.level = level
+        Block.__init__(self, game, pos[0], pos[1], uv, 'BLOCKS', blocked)
+    
+    def action(self):
+        if(self.game.player.rect.x >= self.rect.x - 20 and self.game.player.rect.x <= self.rect.x + 20and self.game.player.rect.y >= self.rect.y - 40 and self.game.player.rect.y <= self.rect.y):
+            
+            self.game.gen_world(self.level)        
+            print(self.game.player.rect.x, self.rect.x)

@@ -152,7 +152,7 @@ class EntityLiving(pygame.sprite.Sprite):
         self.speed = self.start_parameters[6] 
                
             
-    def render_ui(self, screen, camera, drawmp):
+    def render_ui(self, screen, camera, window, drawmp):
         if self.animation == DEAD: return
          
         color_font    = (255, 255, 255)      
@@ -163,12 +163,27 @@ class EntityLiving(pygame.sprite.Sprite):
         textRectObj.center = (camera.apply(self).x + 23, camera.apply(self).y - 25)
         screen.blit(textSurfaceObj, textRectObj)
         
-        screen.blit(self.game.assets['HP_MP_FRAME'], (camera.apply(self).x - 2, camera.apply(self).y - 10 - 6))
+        pygame.draw.rect(screen, (0,0,0), (camera.apply(self).x - 2, camera.apply(self).y - 10 - 6, 52, 5))
         hp = int((self.hp/self.start_parameters[0]) * 50)
         pygame.draw.rect(screen, (220,0,0), (camera.apply(self).x - 1, camera.apply(self).y - 9 - 6, hp, 3))
         
         if drawmp == True:
-            screen.blit(self.game.assets['HP_MP_FRAME'], (camera.apply(self).x - 2, camera.apply(self).y - 10))        
+            pygame.draw.rect(screen, (0,0,0), (camera.apply(self).x - 2, camera.apply(self).y - 10, 52, 5))        
             mp = int((self.mp/self.start_parameters[1]) * 50)
             pygame.draw.rect(screen, (0,220,220), (camera.apply(self).x - 1, camera.apply(self).y - 9, mp, 3))
         
+    def useSkill(self, skillid):        
+        self.skill_list[skillid].useSkill()
+        
+    def find_target(self, target):
+        return ((target.rect.x) // 48, (target.rect.y) // 48)
+    
+    def find_self(self):
+        return self.find_target(self)
+    
+    def change_move(self, direction):
+        if self.animation != DEAD:
+            self.movedir = [0, 0, 0, 0]
+            self.direction = direction
+            if 0 <= direction <= 3:
+                self.movedir[direction] = 1

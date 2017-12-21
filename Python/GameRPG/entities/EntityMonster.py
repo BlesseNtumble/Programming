@@ -5,7 +5,7 @@ import pygame
 
 from Constants import *
 from entities.base.EntityLiving import EntityLiving
-
+from skills.Skills import Arrow
 
 
 class EntityMonster(EntityLiving):
@@ -15,10 +15,16 @@ class EntityMonster(EntityLiving):
         self.name = 'Enemy'
         self.chars = [100.0, 100.0, 1.0, 10] # HP, MP, SPEED, RESPAWN_TIME
         self.start_parameters = [self.chars[0], self.chars[1], position[0], position[1], 1.1, 0, self.chars[2]]
-        
+               
         self.restime = 0
         EntityLiving.__init__(self, self.game, self.name, self.chars, self.start_parameters, DOWN, ALIVE, position, 'PLAYER')
 
+        #self.target = self.game.player
+        #self.last_coords = self.find_target(self.target)
+        #self.path = self.path_find(self.last_coords)
+        
+        self.skill_list.append(Arrow(self))  
+        
 
     def tick(self):        
         EntityLiving.tick(self)
@@ -31,7 +37,7 @@ class EntityMonster(EntityLiving):
                 
 
             print("Entity: %s | PosX: %s | PosY: %s | RespTime: %s" % (self.name, self.rect.x, self.rect.y, self.restime))
-        
+        """
         # Test AI
         if self.animation != DEAD and self.tick_living % 40 == 0:
             j = random.randint(0, 10)
@@ -44,9 +50,11 @@ class EntityMonster(EntityLiving):
                 self.movedir = [0, 0, 0, 0]
                 self.animation = 1
         
-            
-    def render_ui(self, screen, camera): 
-        EntityLiving.render_ui(self, screen, camera, False)
+        """
+        #self.choose_move()
+        
+    def render_ui(self, screen, camera, window): 
+        EntityLiving.render_ui(self, screen, camera, window, False)
 
     def ressurection(self):
         self.hp = self.start_parameters[0]
@@ -56,4 +64,64 @@ class EntityMonster(EntityLiving):
         self.rect.y = self.start_parameters[3] 
         self.speed = self.start_parameters[6]
         self.restime = 0        
+    
+    #Метод Дейкстры
+    def path_find(self, target):
+        lvl = self.game.levels[self.game.current_level].ai_level()
+        
+        coords = self.find_self()
+        mark = ways = lvl.copy()
+        for i in mark:
+            mark[i] = False
+        for i in ways:
+            ways[i] = None
+            
+        mark[coords] = True
+        ways[coords] = list()
+        ways[coords].append(coords)
+        while ways[target] == None:
+            for i in lvl:
+                if mark[i] == True:
+                    for x in lvl[i]:
+                        if ways[x] == None:
+                            z = ways[i].copy()
+                            z.append(x)
+                            ways[x] = z
+            for i in lvl:
+                if ways[i] != None: mark[i] = True
+                
+        return ways[target]
+    
+    def choose_move(self):
+        coords = self.find_self()
+        
+        if(self.last_coords != self.find_target(self.game.player)):
+            self.path = self.path_find(self.find_target(self.game.player))
+        
+        if(self.movedir[LEFT] == 1):
+            coords = ((self.rect.x + self.size) // 64, self.rect.y // 64)
+        if(self.movedir[UP] == 1):
+            coords = (self.rect.x // 64, (self.rect.y + self.size) // 64)
+            
+        if coords == self.path[0]:
+            self.path.pop(0)
+            
+        if len(self.path) == 0:
+            self.speed = 0
+        elif self.path[0][0] > coords[0]:
+            self.change_move(RIGHT)
+        elif self.path[0][0] < coords[0]:
+            self.change_move(LEFT)
+        elif self.path[0][1] > coords[1]:
+            self.change_move(DOWN)
+        elif self.path[0][0] < coords[1]:
+            self.change_move(UP)
+    
+    def cast_check(self):
+        if self.direction == RIGHT or self.direction == LEFT:
+            if(self.target.rect.y < self.rect.y + self.size/2 and self.target.rect.y > self.rect.y - self.size/2):
+                self.useSkill(0)
+        if self.direction == DOWN or self.direction == UP:
+            if(self.target.rect.x < self.rect.x + self.size/2 and self.target.rect.x > self.rect.x - self.size/2):
+                self.useSkill(0)
     
