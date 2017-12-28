@@ -5,16 +5,16 @@ import pygame
 
 from Constants import *
 from Resources import *
-from blocks.Block import Brick
 from entities.EntityMonster import *
 from entities.EntityPlayer import *
 from levels.Default import Default
 from levels.Test import Test
+from levels.start.Start import Start
 
 
 class Main():
     def __init__(self):      
-       
+        
         self.__window__()
         
         self.assets = Resources(ENTITIES, PROJECTILES, GUI).pack
@@ -24,34 +24,11 @@ class Main():
         self.entities = pygame.sprite.Group()
         self.projectiles = pygame.sprite.Group()
         self.blocks = pygame.sprite.Group()
-         
+
         self.player = EntityPlayer(self)
         
-        self.current_level = 'DEFAULT' 
-        
-        print('%.5f' % (0.1-0.9))
-        
-        if(path.isfile('resources/saves/save.txt')):
-            file = open('resources/saves/save.txt', 'r+')
-            file = [line.strip() for line in file]
-            self.player.level = int(file[0])
-            self.player.experience = int(file[1])
-            self.player.hp = float(file[2])
-            self.player.mp = float(file[3])
-            self.player.rect.x = int(file[4])
-            self.player.rect.y = int(file[5])
-            self.current_level = file[6]
-        
-        
-        self.levels = {}     
-        ############## LEVELS ###############
-        self.levels['DEFAULT'] = Test(self)
-        self.levels['non'] = Default(self)   
-        #####################################
-        self.total_level_width  = self.levels[self.current_level].width   
-        self.total_level_height = self.levels[self.current_level].height
-        self.screen = pygame.Surface((WIDTH, self.total_level_height))
-        
+        self.loadgame()
+            
         self.gen_world(self.current_level)      
 
         self.timer = pygame.time.Clock()
@@ -65,11 +42,19 @@ class Main():
         pygame.init()
         pygame.display.set_caption('Test')
         
-        self.window = pygame.display.set_mode(SIZE)
+        self.current_level = 'START'
+        self.levels = {}     
+        ############## LEVELS ###############
+        self.levels['START'] = Start(self)
+        #self.levels['non'] = Default(self)   
+        #####################################
+        self.total_level_width  = self.levels[self.current_level].width   
+        self.total_level_height = self.levels[self.current_level].height
         
-        
-        self.isRun = True
+        self.screen = pygame.Surface((self.total_level_width, self.total_level_height))
 
+        self.window = pygame.display.set_mode(SIZE)         
+        self.isRun = True
     
     # Обработка событий
     def event_handler(self):
@@ -80,7 +65,6 @@ class Main():
                 self.isRun = False    
             elif event.type == pygame.USEREVENT+1:
                 [i.tick() for i in self.entities]
-                [i.tick() for i in self.blocks]
             elif event.type == pygame.KEYDOWN:
                 if self.player.animation != DEAD:
                     
@@ -97,10 +81,15 @@ class Main():
                         self.player.movedir = [0, 0, 0, 1] #[D, L, R, U]
                         
                     if event.key == pygame.K_SPACE:
-                        self.player.attack()
+                        self.player.attack(2, 10)
                        
                     if event.key == pygame.K_z:
-                        self.player.useSkill(0)
+                        #self.player.useSkill(0)
+                        self.gen_world(self.current_level)
+                        
+                if self.player.animation == DEAD:
+                    if event.key == pygame.K_e:
+                        self.player.ressurection()
                        
                 if event.key == pygame.K_q:
                     if self.player.animation != DEAD:
@@ -122,28 +111,38 @@ class Main():
                     
     # Тело рендера
     def render(self):
-        self.levels[self.current_level].update()        
-        self.window.blit(self.screen, ((WIDTH - self.levels[self.current_level].width) * (-1), 0))
+        self.levels[self.current_level].update()     
+        self.window.blit(self.screen, (0, 0))
+        self.screen.fill((0,0,0))
         
-        self.blocks.update()    
+        #self.blocks.update()    
         #self.blocks.draw(self.screen)  
-        self.projectiles.update()
+        #self.projectiles.update()
         #self.projectiles.draw(self.screen)        
-        self.entities.update()
+        #self.entities.update()
         #self.entities.draw(self.screen)   
         
         self.camera = Camera(self.camera_configure, self.total_level_width, self.total_level_height)       
         self.camera.update(self.player)
-        [self.screen.blit(e.image, self.camera.apply(e)) for e in self.blocks]
+        
+        for e in self.blocks: 
+            if e.layer == None: 
+                self.screen.blit(e.image, self.camera.apply(e))
+       
         [self.screen.blit(e.image, self.camera.apply(e)) for e in self.entities]
-        [self.screen.blit(e.image, self.camera.apply(e)) for e in self.projectiles]
+        
+        for e in self.blocks: 
+            if e.layer == 1: 
+                self.screen.blit(e.image, self.camera.apply(e))
+                
+        [self.screen.blit(e.image, self.camera.apply(e), None, pygame.BLEND_ADD) for e in self.projectiles]
                       
         [i.render_ui(self.screen, self.camera, self.window) for i in self.entities]
         
-        pygame.display.update() #or .flip()?
-    
-    def move(self):
+        pygame.display.flip()
         
+   
+    def move(self):        
         [i.move() for i in self.projectiles]
         [i.move() for i in self.entities]
             
@@ -179,11 +178,23 @@ class Main():
     
         l = min(0, l)                           # Не движемся дальше левой границы
         l = max(-(camera.width-WIDTH), l)   # Не движемся дальше правой границы
-        t = max(-(camera.height-HEIGHT + 120), t) # Не движемся дальше нижней границы
+        t = max(-(camera.height-HEIGHT + HUD_PANEL_SIZE), t) # Не движемся дальше нижней границы
         t = min(0, t)                           # Не движемся дальше верхней границы
     
         return pygame.Rect(l, t, w, h)      
 
+    def loadgame(self):
+        if(path.isfile('resources/saves/save.txt')):
+            file = open('resources/saves/save.txt', 'r+')
+            file = [line.strip() for line in file]
+            self.player.level = int(file[0])
+            self.player.experience = int(file[1])
+            self.player.hp = float(file[2])
+            self.player.mp = float(file[3])
+            self.player.rect.x = int(file[4])
+            self.player.rect.y = int(file[5])
+            self.current_level = file[6]
+            
     def savegame(self):
         if not path.isdir('resources/saves/'): makedirs('resources/saves/')
         file = open('resources/saves/save.txt', 'w+')        

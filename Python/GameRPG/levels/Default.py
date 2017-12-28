@@ -13,15 +13,16 @@ class Default(Levels):
     
     def spawn_npc(self):
         self.game.entities.add(self.game.player)
-        self.game.player.rect.x = 80
-        self.game.player.rect.y = 80
+        self.game.add_monster(400.0, 350.0)
+        #self.game.player.rect.x = 80
+        #self.game.player.rect.y = 80
         
     def getLevelFile(self):
         return 'test1.txt' 
     
     def init_blocks(self, x, y, file):
-        if(file[y][x] == '0'):self.game.blocks.add(Brick(self.game, (40*x, 40*y), (1,1), (0,0,0,0)))
-        if(file[y][x] == '1'): self.game.blocks.add(Brick(self.game, (40*x, 40*y), (0,0), (1,1,1,1)))
-        if(file[y][x] == '2'):  self.game.blocks.add(Brick(self.game, (40*x, 40*y), (0,1), (0,0,0,0)))
-        if(file[y][x] == 'T'):  self.game.blocks.add(ChangeLevelBlock(self.game, (40*x, 40*y), (1,1), (0,0,0,0), 'DEFAULT'))
-        
+        #if(file[y][x] == '0'):self.game.blocks.add(Brick(self.game, (40*x, 40*y), (1,1), (0,0,0,0)))
+        #if(file[y][x] == '1'): self.game.blocks.add(Brick(self.game, (40*x, 40*y), (0,0), (1,1,1,1)))
+        #if(file[y][x] == '2'):  self.game.blocks.add(Brick(self.game, (40*x, 40*y), (0,1), (0,0,0,0)))
+        #if(file[y][x] == 'T'):  self.game.blocks.add(ChangeLevelBlock(self.game, (40*x, 40*y), (1,1), (0,0,0,0), 'DEFAULT', 60))
+        pass

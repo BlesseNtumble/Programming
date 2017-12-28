@@ -5,7 +5,12 @@ ENTITIES = [
         #ENTITIES
         ('PLAYER', ('resources/actor.png', 6, 4, 48)),
         #BLOCKS
-        ('BLOCKS', ('resources/blocks.png', 2, 2, 40))
+        ('GRASS', ('resources/levels/grass_blocks.png', 7, 1, 32)),
+        ('WATER', ('resources/levels/water_blocks.png', 6, 3, 32)),
+        ('BRIDGE_1', ('resources/levels/bridge_1.png', 1, 1, 96)),
+        ('BRIDGE_2', ('resources/levels/bridge_2.png', 1, 1, 96)),
+        ('STUMP_1', ('resources/levels/stump_1.png', 1, 1, 64)),
+        ('LEAVES_1', ('resources/levels/leaves_1.png', 1, 1, 96)),
         ]
 PROJECTILES = [
         ('ARROW', ('resources/arrow.png', 4, 48))
@@ -13,6 +18,7 @@ PROJECTILES = [
 GUI = [
         
     ] 
+
 
 class Resources():
     def __init__(self, entities_data, projectile_data, images):
@@ -25,7 +31,7 @@ class Resources():
     def generate_pack(self):        
         for i in self.entities_data:
             img = list()
-            temp = pygame.image.load(i[1][0]).convert_alpha()
+            temp = pygame.image.load(i[1][0]).convert_alpha()            
             size = i[1][3]
             u = i[1][1]
             v = i[1][2]

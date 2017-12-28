@@ -47,7 +47,7 @@ class EntityProjectile(pygame.sprite.Sprite):
                 self.set_damage(i)
                 
         for i in self.game.blocks:
-            if pygame.sprite.collide_rect(self, i) and i.block_sides[self.direction] == 1:
+            if pygame.sprite.collide_rect(self, i) and i.block_sides[self.direction] == 1 and i.block_proj == True:
                 self.remove()
                 
     def set_damage(self, obj):

@@ -7,26 +7,28 @@ from Constants import *
 from entities.base.EntityLiving import EntityLiving
 from skills.Skills import Arrow
 
-
 class EntityMonster(EntityLiving):
 
     def __init__(self, game, position):
         self.game = game
-        self.name = 'Enemy'
-        self.chars = [100.0, 100.0, 1.0, 10] # HP, MP, SPEED, RESPAWN_TIME
+        self.name = 'Enemy ' + str(random.randint(0, 3))
+        self.chars = [100.0, 100.0, 1, 10] # HP, MP, SPEED, RESPAWN_TIME
         self.start_parameters = [self.chars[0], self.chars[1], position[0], position[1], 1.1, 0, self.chars[2]]
                
         self.restime = 0
         EntityLiving.__init__(self, self.game, self.name, self.chars, self.start_parameters, DOWN, ALIVE, position, 'PLAYER')
 
-        #self.target = self.game.player
+        self.target = self.game.player
         #self.last_coords = self.find_target(self.target)
         #self.path = self.path_find(self.last_coords)
         
-        self.skill_list.append(Arrow(self))  
+        self.skill_list.append(Arrow(self, 0, 4))  
         
-
-    def tick(self):        
+        self.type = AGRESSIVE
+        self.attack_type = MELEE
+                    
+    def tick(self): 
+        
         EntityLiving.tick(self)
 
         # Воскрешение
@@ -34,27 +36,52 @@ class EntityMonster(EntityLiving):
             self.restime += 1
             if(self.restime >= self.chars[3]): 
                 self.ressurection()
-                
-
             print("Entity: %s | PosX: %s | PosY: %s | RespTime: %s" % (self.name, self.rect.x, self.rect.y, self.restime))
-        """
-        # Test AI
-        if self.animation != DEAD and self.tick_living % 40 == 0:
-            j = random.randint(0, 10)
-            
-            if j == 0: self.movedir = [1, 0, 0, 0]
-            if j == 1: self.movedir = [0, 1, 0, 0]
-            if j == 2: self.movedir = [0, 0, 1, 0]
-            if j == 3: self.movedir = [0, 0, 0, 1]
-            if j >= 4:  
-                self.movedir = [0, 0, 0, 0]
-                self.animation = 1
+    
+        radius = 200
+          
+        if self.type != PASSIVE:      
+            self.target = self.getEntityInRange(self, radius, self.game.player)
         
-        """
+        if (self.target != None): print(self.getEntityInFace(self, self.target))
+
+        if self.tick_living % 4 == 0 and self.animation != DEAD:               
+            
+            if self.type == AGRESSIVE and self.target != None and self.target.animation != DEAD:
+                
+                if self.target == self.game.player:
+                    if self.attack_type == MELEE:
+                        if(self.rect.y + self.size/2 > self.target.rect.y) and (self.rect.y - self.size/2 < self.target.rect.y):
+                           
+                            if(self.rect.x + self.size/2 < self.target.rect.x): self.change_move(RIGHT)
+                            elif(self.rect.x > self.target.rect.x): self.change_move(LEFT)
+                        elif(self.rect.y + self.size/2 + 1> self.target.rect.y): self.change_move(UP)
+                        elif(self.rect.y - self.size/2 - 1< self.target.rect.y): self.change_move(DOWN)
+    
+                        if self.getEntityInFace(self, self.target):
+                            self.attack(3, 3)
+                    elif self.attack_type == RANGE:
+                        pass
+            else:
+                
+                j = random.randint(0, 10)
+            
+                if j == 0: self.movedir = [1, 0, 0, 0]
+                if j == 1: self.movedir = [0, 1, 0, 0]
+                if j == 2: self.movedir = [0, 0, 1, 0]
+                if j == 3: self.movedir = [0, 0, 0, 1]
+                if j >= 4:  
+                    self.movedir = [0, 0, 0, 0]
+                    self.animation = 1            
+            
+            #print(self.rect.x, self.rect.y, self.target.rect.x, self.target.rect.y)
         #self.choose_move()
         
-    def render_ui(self, screen, camera, window): 
+    def render_ui(self, screen, camera, window):                 
         EntityLiving.render_ui(self, screen, camera, window, False)
+        color_font    = (255, 255, 255)
+        textSurfaceObj = self.font.render('Target: ' + str(self.target), False, color_font)       
+        screen.blit(textSurfaceObj, (camera.apply(self).x - 20, camera.apply(self).y + 70))
 
     def ressurection(self):
         self.hp = self.start_parameters[0]

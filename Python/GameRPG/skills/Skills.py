@@ -25,11 +25,10 @@ class Skills():
 
 class Arrow(Skills):
     
-    def __init__(self, caster):
-        Skills.__init__(self, 'Arrow', 10, 1, caster)
+    def __init__(self, caster, cost, reload):
+        Skills.__init__(self, 'Arrow', cost, reload, caster)
         
     def action(self):
         self.caster.game.projectiles.add(EntityArrow(self.caster.game, self.caster, self.caster.rect.x, self.caster.rect.y, self.caster.direction))
 
-            
-            
+         
