@@ -33,9 +33,6 @@ class Main():
 
         self.timer = pygame.time.Clock()
         
-       
-                
-        
         self.draw_screen()
     
     def __window__(self):
@@ -81,16 +78,12 @@ class Main():
                         self.player.movedir = [0, 0, 0, 1] #[D, L, R, U]
                         
                     if event.key == pygame.K_SPACE:
-                        self.player.attack(2, 10)
+                        self.player.attack(2, 8 * self.player.level)
                        
                     if event.key == pygame.K_z:
-                        #self.player.useSkill(0)
-                        self.gen_world(self.current_level)
+                        self.player.useSkill(0)
+                        #self.gen_world(self.current_level)
                         
-                if self.player.animation == DEAD:
-                    if event.key == pygame.K_e:
-                        self.player.ressurection()
-                       
                 if event.key == pygame.K_q:
                     if self.player.animation != DEAD:
                         self.player.kill()
@@ -130,16 +123,16 @@ class Main():
                 self.screen.blit(e.image, self.camera.apply(e))
        
         [self.screen.blit(e.image, self.camera.apply(e)) for e in self.entities]
-        
+              
         for e in self.blocks: 
             if e.layer == 1: 
                 self.screen.blit(e.image, self.camera.apply(e))
                 
-        [self.screen.blit(e.image, self.camera.apply(e), None, pygame.BLEND_ADD) for e in self.projectiles]
+        [self.screen.blit(e.image, self.camera.apply(e)) for e in self.projectiles]
                       
         [i.render_ui(self.screen, self.camera, self.window) for i in self.entities]
         
-        pygame.display.flip()
+        pygame.display.update()
         
    
     def move(self):        
@@ -164,12 +157,12 @@ class Main():
         
         while self.isRun == True:
             self.render()
-            self.timer.tick(100) 
+            self.timer.tick(60) 
             self.event_handler()           
             self.move()           
             
-    def add_monster(self, x, y):
-        self.entities.add(EntityMonster(self, [x, y]))
+    def add_monster(self, x, y, lvl):
+        self.entities.add(EntityMonster(self, [x, y], lvl))
         
     def camera_configure(self, camera, target_rect):
         l, t, _, _ = target_rect
@@ -194,6 +187,8 @@ class Main():
             self.player.rect.x = int(file[4])
             self.player.rect.y = int(file[5])
             self.current_level = file[6]
+            self.player.start_parameters[0] = HP[self.player.level - 1]
+            self.player.start_parameters[1] = MP[self.player.level - 1]
             
     def savegame(self):
         if not path.isdir('resources/saves/'): makedirs('resources/saves/')

@@ -4,44 +4,69 @@ from entities.base.EntityLiving import *
 from skills.Skills import Skills, Arrow
 
 
-position = [150, 50]
+position = [200, 200]
 
 class EntityPlayer(EntityLiving):
     
     def __init__(self, game):
         self.name = 'Little Boy'
         self.game = game
-        self.chars = [100, 100, SPEED] #HP, MP, SPEED
-        self.base = [self.chars[0], self.chars[1], position[0], position[1], HP_REG, MP_REG, SPEED]       
-        EntityLiving.__init__(self, self.game, self.name, self.chars, self.base, DOWN, ALIVE, position, 'PLAYER')    
-    
-        self.skill_list.append(Arrow(self, 10, 1))
-
+        self.base = [1, 1, position[0], position[1], HP_REG, MP_REG, SPEED]       
+        EntityLiving.__init__(self, self.game, self.name, self.base, DOWN, ALIVE, position, 'PLAYER')    
         
+        self.skill_list.append(Arrow(self, 10, 1))
+        
+        self.xsize = 32
+        self.ysize = 48
+        
+        self.inLvlUp = False
+        self.time_up_regen = 5
         
     def tick(self):
         EntityLiving.tick(self)             
-
-        self.start_parameters[0] = HP[self.level - 1]
-        self.start_parameters[1] = MP[self.level - 1]
+               
+        
 
         if self.experience >= EXP[self.level - 1]:
+            self.experience = self.experience - EXP[self.level - 1]
             self.level += 1
-            self.experience = 0
             self.start_parameters[0] = HP[self.level - 1]
             self.start_parameters[1] = MP[self.level - 1]
-            self.hp = self.start_parameters[0]      
-            self.mp = self.start_parameters[1]      
-
-        #self.regen('hp', 20, 5, 2)
-                     
+            #self.hp = self.start_parameters[0]      
+            #self.mp = self.start_parameters[1]
+            self.inLvlUp = True  
+        
+        if(self.inLvlUp == True): 
+            if(self.tick_living % 10 == 0 and self.time_up_regen > 0):
+                self.regen('hp', 20)
+                self.regen('mp', 40)
+                self.time_up_regen -= 1
+                print(self.time_up_regen)
+                
+        if(self.time_up_regen <= 0):
+            self.time_up_regen = 5
+            self.inLvlUp = False
                 
         self.getEntityInFace(self)
-            
+
+    
     def move(self):
-        EntityLiving.move(self)
+        
+        
+        if(self.getBlocksInRange(self, self.xsize, self.ysize, True)):
+            if(self.movedir[RIGHT]) == 1:
+                    self.rect.x -= self.speed            
+            if(self.movedir[LEFT]) == 1:
+                    self.rect.x += self.speed
+            if(self.movedir[DOWN]) == 1:
+                    self.rect.y -= self.speed
+            if(self.movedir[UP]) == 1:
+                    self.rect.y += self.speed
+            self.movedir[self.direction] = 0
+            
         [i.tick() for i in self.game.blocks]  
-          
+        return EntityLiving.move(self)
+      
     def render_ui(self, screen, camera, window):
         
         
@@ -62,7 +87,7 @@ class EntityPlayer(EntityLiving):
         
         pygame.draw.rect(screen, (20,20,20), (WIDTH / 2 - 500, HEIGHT - 20, 1000, 17))        
         exp = int((1000 * self.experience) / EXP[self.level - 1])
-        pygame.draw.rect(screen, (100,100,100), (WIDTH / 2 - 498, HEIGHT - 18, exp, 13))
+        if(exp <= 1000): pygame.draw.rect(screen, (100,100,100), (WIDTH / 2 - 498, HEIGHT - 18, exp, 13))
         
         
         textSurfaceObj = self.font.render(str(self.experience) + "/" + str(EXP[self.level - 1]) + " EXP", False, color_font)

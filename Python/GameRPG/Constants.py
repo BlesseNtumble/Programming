@@ -1,6 +1,3 @@
-import random
-
-
 SIZE = (WIDTH, HEIGHT) = (1250, 916)
 
 HUD_PANEL_SIZE = 80
@@ -10,11 +7,10 @@ EXP = []
 HP = []
 MP = []
 for i in range(LEVELS):
-    EXP.append(100 + 500*i + random.randint(0, 100))
-    HP.append(100 + 40*i + random.randint(0, 100))
-    MP.append(300 + 40*i + random.randint(0, 100))
-    
-print(EXP)
+    EXP.append(568 + 500*i)
+    HP.append(100 + 40*i)
+    MP.append(300 + 40*i)
+
 # Direction
 DOWN = 0
 LEFT = 1
@@ -27,7 +23,7 @@ DEAD = 3
 SHOOT = 4
 
 # Chars
-SPEED = 2
+SPEED = 3
 SPELL_COST = 10
 HP_REG = 1
 MP_REG = 1

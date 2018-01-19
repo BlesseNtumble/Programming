@@ -6,11 +6,9 @@ import pygame
 
 from Constants import *
 
-
-
 class EntityLiving(pygame.sprite.Sprite):
        
-    def __init__(self, game, name, chars, base, direct, anim, position, image_id):
+    def __init__(self, game, name, base, direct, anim, position, image_id):
         super(EntityLiving, self).__init__()
 
         self.game = game
@@ -27,10 +25,10 @@ class EntityLiving(pygame.sprite.Sprite):
 
         self.skill_list = []
         
-        self.hp = self.start_parameters[0]
+        self.hp = HP[self.level - 1]
         self.mp = self.start_parameters[1]
         
-        self.speed = chars[2]
+        self.speed = float(self.start_parameters[6])
         self.tick_living = 0.0
         
         # Передвижение [D, L, R, U]
@@ -43,7 +41,8 @@ class EntityLiving(pygame.sprite.Sprite):
         self.rect.x = position[0]
         self.rect.y = position[1]
         
-        self.size = self.rect.size[0]
+        self.xsize = self.rect.size[0]
+        self.ysize = self.rect.size[1]
         
         self.font = pygame.font.Font('freesansbold.ttf', 13)
         self.attack_cooldown = 0  
@@ -73,10 +72,11 @@ class EntityLiving(pygame.sprite.Sprite):
                 self.attack_cooldown -= 1
                 
             if(self.movedir[self.direction] != 0):
-                t = math.cos(round(self.tick_living))
+                t = math.cos(int(self.tick_living * 1.5))
+                print(t)
                 if t >= 0:
                     self.animation = 0
-                elif t <= -0: 
+                elif t < 0: 
                     self.animation = 2
             
             if self.isInBattle == False and self.tick_living % 10 == 0:
@@ -93,17 +93,20 @@ class EntityLiving(pygame.sprite.Sprite):
         self.damage_count = count
         
     def attack(self, cooldown, count):
+        print(self.getEntityInFace(self))
         if(self.attack_cooldown == 0):
             if self.getEntityInFace(self) != None:
                 self.getEntityInFace(self).set_damage(self, count)
             self.animation = 5
             self.attack_cooldown = cooldown
                  
-    def regen(self, typereg, count):        
+    def regen(self, typereg, count): 
         if typereg == 'hp' and self.hp < self.start_parameters[0]:
-            self.hp += count
+            if(self.hp + count > HP[self.level - 1]): self.hp += HP[self.level - 1] - self.hp
+            else: self.hp += count
         if typereg == 'mp' and self.mp < self.start_parameters[1]:
-            self.mp += count
+            if(self.mp + count > MP[self.level - 1]): self.mp += MP[self.level - 1] - self.mp           
+            else: self.mp += count
                
     def getEntityInRange(self, obj, radius, target=None):
         for i in self.game.entities: 
@@ -114,47 +117,40 @@ class EntityLiving(pygame.sprite.Sprite):
                             return i
                     else: return i
                 
-    def getBlocksInRange(self, obj, radius, checkblocks):
+    def getBlocksInRange(self, obj, radiusx, radiusy, checkblocks):
         for i in self.game.blocks: 
-            if self.animation != DEAD:
-                if(i.rect.x > obj.rect.x - radius) and (i.rect.x < obj.rect.x + radius) and (i.rect.y > obj.rect.y - radius) and (i.rect.y < obj.rect.y + radius):
-                    if checkblocks == True:
-                        if i.block_sides[self.direction] == 1:
-                            return i
-                    else: return i
-    
+            if self.animation != DEAD and i.block_sides[self.direction] == 1:
+                if(i.rect.x > obj.rect.x - radiusx) and (i.rect.x < obj.rect.x + radiusx) and (i.rect.y > obj.rect.y - radiusy) and (i.rect.y < obj.rect.y + radiusy):
+                    return i
+                   
     def getEntityInFace(self, obj, target=None):
         for i in self.game.entities:
-            if(obj != i) and i.animation != DEAD and self.animation != DEAD:
+            if(obj != i) and i.animation != DEAD and obj.animation != DEAD:
                 if obj.direction == RIGHT:
-                    if(i.rect.x > obj.rect.x + obj.size/2) and (i.rect.x < obj.rect.x + obj.size + 1) and (i.rect.y > obj.rect.y - obj.size/2 - 5) and (i.rect.y < obj.rect.y + obj.size/2):
+                    if(i.rect.x > obj.rect.x + obj.xsize/2 - 5) and (i.rect.x < obj.rect.x + obj.xsize + 5) and (i.rect.y > obj.rect.y - obj.ysize/2 - 5) and (i.rect.y < obj.rect.y + obj.ysize/2):
                         if target != None:
                             if i == target:
                                 return i
-                            else: return None
                         else: return i 
                 if obj.direction == LEFT:
-                    if(i.rect.x > obj.rect.x - obj.size - 1) and (i.rect.x < obj.rect.x - obj.size/2) and (i.rect.y > obj.rect.y - obj.size/2 - 5) and (i.rect.y < obj.rect.y + obj.size/2):
+                    if(i.rect.x > obj.rect.x - obj.xsize - 5) and (i.rect.x < obj.rect.x - obj.xsize/2 + 5) and (i.rect.y > obj.rect.y - obj.ysize/2 - 5) and (i.rect.y < obj.rect.y + obj.ysize/2):
                         if target != None:
                             if i == target:
                                 return i
-                            else: return None
                         else: return i 
                 if obj.direction == UP:
-                    if(i.rect.x > obj.rect.x - obj.size/2 - 20) and (i.rect.x < obj.rect.x + obj.size/2 + 20) and (i.rect.y > obj.rect.y - obj.size - 1) and (i.rect.y < obj.rect.y + obj.size/2):
+                    if(i.rect.x > obj.rect.x - obj.xsize/2 - 20) and (i.rect.x < obj.rect.x + obj.xsize/2 + 20) and (i.rect.y > obj.rect.y - obj.ysize - 1) and (i.rect.y < obj.rect.y + obj.ysize/2):
                         if target != None:
                             if i == target:
                                 return i
-                            else: return None
                         else: return i 
                 if obj.direction == DOWN:
-                    if(i.rect.x > obj.rect.x - obj.size/2 - 20) and (i.rect.x < obj.rect.x + obj.size/2 + 20) and (i.rect.y > obj.rect.y - obj.size/2) and (i.rect.y < obj.rect.y + obj.size + 1):
+                    if(i.rect.x > obj.rect.x - obj.xsize/2 - 20) and (i.rect.x < obj.rect.x + obj.xsize/2 + 20) and (i.rect.y > obj.rect.y - obj.ysize/2) and (i.rect.y < obj.rect.y + obj.ysize + 1):
                         if target != None:
                             if i == target:
                                 return i
-                            else: return None
-                        else: return i 
-                   
+                        else: return i                 
+   
     # Движение энтити
     def move(self):        
 
@@ -190,24 +186,13 @@ class EntityLiving(pygame.sprite.Sprite):
                         self.rect.top = i.rect.bottom         
                     self.movedir[self.direction] = 0
                     
-        if(self.getBlocksInRange(self, self.size, True)):
-            if(self.movedir[RIGHT]) == 1:
-                    self.rect.x -= self.speed
-            if(self.movedir[LEFT]) == 1:
-                    self.rect.x += self.speed
-            if(self.movedir[DOWN]) == 1:
-                    self.rect.y -= self.speed
-            if(self.movedir[UP]) == 1:
-                    self.rect.y += self.speed
-            self.movedir[self.direction] = 0
-            
     def kill(self, attacker=None):
         self.hp = 0
-        self.speed = 0
+        self.speed = 0.0
         self.animation = DEAD   
         
         if(attacker != None):
-            attacker.experience += 50                     
+            attacker.experience += 50 * self.level                     
             print(attacker.experience)
          
     def ressurection(self):
@@ -232,11 +217,7 @@ class EntityLiving(pygame.sprite.Sprite):
     
         textSurfaceObj = self.font.render("X: " + str(self.rect.x) + " | Y: " + str(self.rect.y), False, color_font)       
         screen.blit(textSurfaceObj, (camera.apply(self).x - 20, camera.apply(self).y + 55))
-      
-        textSurfaceObj = self.font.render("[" + str(self.level) + "] " + str(self.name) + " ", False, color_font)       
-        screen.blit(textSurfaceObj, (camera.apply(self).x - 10, camera.apply(self).y - 35))
-        
-                
+          
         pygame.draw.rect(screen, (0,0,0), (camera.apply(self).x - 2, camera.apply(self).y - 10 - 6, 52, 5))
         hp = int((self.hp/self.start_parameters[0]) * 50)
         pygame.draw.rect(screen, (220,0,0), (camera.apply(self).x - 1, camera.apply(self).y - 9 - 6, hp, 3))
